@@ -20,11 +20,13 @@ If a corner is cut, the PR does not merge.
 > Read, in this order:
 >
 > 1. [`AGENTS.md`](./AGENTS.md) — your operating contract, workspace layout, and the definition of done. **(mandatory)**
-> 2. [`docs/NO_STOPPING.md`](./docs/NO_STOPPING.md) — the one-run rule and the exhaustion ladder. **(mandatory)**
-> 3. [`docs/SETUP.md`](./docs/SETUP.md) — install the toolchain yourself (one command).
-> 4. [`CONTRIBUTING.md`](./CONTRIBUTING.md) — the exact step-by-step procedure for submitting a model.
-> 5. [`STANDARDS.md`](./STANDARDS.md) — the technical quality bar every asset is measured against.
-> 6. [`docs/MODEL_SPEC.md`](./docs/MODEL_SPEC.md) — required content of each model's `.md` write-up
+> 2. [`BRIEFS.md`](./BRIEFS.md) — **what to build.** Claim your assignment first:
+>    `python tools/claim_brief.py --next --agent <slug>`. Do not invent a subject. **(mandatory)**
+> 3. [`docs/NO_STOPPING.md`](./docs/NO_STOPPING.md) — the one-run rule and the exhaustion ladder. **(mandatory)**
+> 4. [`docs/SETUP.md`](./docs/SETUP.md) — install the toolchain yourself (one command).
+> 5. [`CONTRIBUTING.md`](./CONTRIBUTING.md) — the exact step-by-step procedure for submitting a model.
+> 6. [`STANDARDS.md`](./STANDARDS.md) — the technical quality bar every asset is measured against.
+> 7. [`docs/MODEL_SPEC.md`](./docs/MODEL_SPEC.md) — required content of each model's `.md` write-up
 >    (worked example: [`docs/EXAMPLE_PACKAGE_README.md`](./docs/EXAMPLE_PACKAGE_README.md)).
 >
 > Then run `python tools/preflight.py <your-folder>` before you push. **Preflight failing = you are not done.**
@@ -40,6 +42,7 @@ Each contribution is one **agent workspace** containing one or more **model pack
 
 | Term | Meaning |
 | --- | --- |
+| **Brief** | The owner-written assignment in `BRIEFS/OPEN/` — subject, dimensions, must-haves, avoid list. Agents claim one; they do not choose their own subject. See [`BRIEFS.md`](./BRIEFS.md). |
 | **Agent workspace** | Top-level folder named `agent_<slug>` — owns everything one agent produced. Never shared, never edited by another agent. |
 | **Model package** | Subfolder of a workspace named in `kebab-case` after the asset (e.g. `brass-portable-lantern`). Contains the mesh, the renders, the render archive, and the write-up. |
 | **Render archive** | `renders.zip` — the 5+ best renders of the finished model, at least one of each required view. |
@@ -83,6 +86,11 @@ Full numbers and per-category rules: [`STANDARDS.md`](./STANDARDS.md).
 ```
 README.md                  ← you are here: what this repo is and how to start
 AGENT_PROMPT.md            ← drop-in kickoff prompt (with PAT placeholder) + requirement mapping
+BRIEFS.md                  ← how the owner assigns work: brief queue, packs, claim/deliver
+BRIEFS/
+  TEMPLATE.md              ← copy to OPEN/NNNN-slug.md to assign a specific asset
+  OPEN/ CLAIMED/ DELIVERED/  ← the queue (agents claim with tools/claim_brief.py)
+packs/                      ← themed subject lists: brief_from_pack.py generates briefs from them
 AGENTS.md                  ← operating contract for autonomous agents (READ FIRST)
 .env.example               ← GH_TOKEN placeholder + install paths (copy to .env, never commit)
 CONTRIBUTING.md            ← step-by-step submission procedure

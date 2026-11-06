@@ -10,6 +10,7 @@
 ## 1. Drop-in prompt (paste this to your agent)
 
 Everything between the lines is the message. Replace `<PASTE_PAT_HERE>` with the token.
+**If you want a specific asset**, see §1b — that variant also tells the agent what to build.
 
 ```
 You are an autonomous agent contributing 3D models to https://github.com/dreamer2664/3dmodels
@@ -25,12 +26,23 @@ GH_TOKEN=<PASTE_PAT_HERE>
 
 ## Read first (binding documents, in this order)
 1. AGENTS.md            - operating contract, folder layout, definition of done
-2. docs/NO_STOPPING.md  - you must finish the model in ONE run: no stopping, no partial packages
-3. docs/SETUP.md        - how to install the toolchain; run tools/setup_blender.sh
-4. STANDARDS.md         - the quality bar (this is demanding on purpose)
-5. docs/MODEL_SPEC.md   - what the model README must contain
-6. docs/RENDER_SPEC.md  - required views, lighting, framing
+2. BRIEFS.md            - what you are building and how to claim it
+3. docs/NO_STOPPING.md  - you must finish the model in ONE run: no stopping, no partial packages
+4. docs/SETUP.md        - how to install the toolchain; run tools/setup_blender.sh
+5. STANDARDS.md         - the quality bar (this is demanding on purpose)
+6. docs/MODEL_SPEC.md   - what the model README must contain
+7. docs/RENDER_SPEC.md  - required views, lighting, framing
 Do not ask me about scope, style, colour, detail level or camera angles. Those documents decide.
+
+## What to build
+Get your assignment from the brief queue - do not invent your own subject:
+    python tools/claim_brief.py --next --agent <your-slug>
+That assigns you the next open brief, locks it to you, and creates your package folder.
+Build exactly the asset that brief describes: its slug, title, dimensions, must_have list
+and avoid list are binding. If there is no brief, generate one from a pack
+(python tools/brief_from_pack.py packs/basic-props.pack --count 1) or write one with
+--new and fill in every field. When the package is pushed, close the loop:
+    python tools/claim_brief.py --deliver <brief-id> --agent <your-slug>
 
 ## Toolchain: install it, do not report it missing
 The sandbox will not have Blender preinstalled. That is expected and it is your job to fix:
@@ -80,6 +92,41 @@ Never invent results, never claim a check you did not run, never commit a secret
 Your final message must answer the five self-audit questions in docs/NO_STOPPING.md section 6.
 ```
 
+## 1b. Variant — you want one specific asset, not the queue
+
+Say the subject in the prompt. Everything else stays identical (read the same docs, same standards,
+same one-run rule); the only difference is the asset is specified by you instead of by the queue.
+
+```
+You are an autonomous agent contributing to https://github.com/dreamer2664/3dmodels
+GH_TOKEN=<PASTE_PAT_HERE>     # owner grants permission to use this token for git operations
+
+[first two paragraphs of the prompt in §1: read-first list + toolchain install]
+
+## What to build — this asset, exactly
+  Asset      : late-19th-century brass portable oil lantern
+  Slug       : brass-portable-lantern      (folder + package + file names)
+  Category   : hard-surface-prop
+  Dimensions : 16.2 cm wide, 16.2 cm deep, 31.2 cm tall (real-world metres)
+  Style      : stylised-realistic, game-ready PBR
+  Must have  : flared spun-brass base with rolled seam; domed vent cap with louvres and a
+               lifting loop; four glass guard wires; hinged side door with a visible hinge pin;
+               wire bail handle as a separate posable object; knurled wick adjuster knob
+  Avoid      : soot, heavy damage, legible branding, a lit flame
+  Tri budget : 20k-80k
+  References : museum photos of railway hand lanterns (form and proportion only)
+
+Treat this as brief #0: it overrides the brief queue. Create agent_<your-slug>/brass-portable-lantern/,
+record `brief_source: prompt` in the package README front-matter, and skip
+`claim_brief.py --next`. Everything else - one run, 5+ renders at 1600px, zip, README, preflight
+exit 0, branch + PR - is unchanged and non-negotiable.
+```
+
+Keep the field list to what you actually care about. A prompt with **dimensions + must_have + avoid**
+produces a dramatically more predictable model than three paragraphs of adjectives.
+
+---
+
 ## 2. How the original prompt maps to requirements
 
 | Original phrase | Turned into |
@@ -96,6 +143,7 @@ Your final message must answer the five self-audit questions in docs/NO_STOPPING
 | "Look at the renders before pushing" | Mandatory self-inspection protocol (`docs/RENDER_SPEC.md` §6), contact-sheet review step, ticked checklist in the README, "gaps" field in the PR template |
 | "they say there's no blender in the sandbox" | `docs/SETUP.md` + `tools/setup_blender.sh`: one-command no-root install (Blender 4.2 LTS tarball, shared-library autopair via `apt-get download`), verified end-to-end in a clean sandbox; "not installed" is explicitly an unacceptable report |
 | "they stop halfway" | `docs/NO_STOPPING.md`: one-run rule, list of violations, completion loop, 10-rung exhaustion ladder, credentials pre-granted, time budget, and a 5-question self-audit that must be answered in the final message |
+| "how does the agent know what to build?" | `BRIEFS.md` + `BRIEFS/OPEN/` queue with atomic claims (`tools/claim_brief.py --next`), themed `packs/`, `brief #0` in the prompt for one-off subjects, and `BRIEFS/DELIVERED/` as the audit trail |
 | (implicit) "they need push access" | PAT placeholder in `.env.example` and in the prompt above, with the owner's explicit written permission to use it; token kept out of the repo tree by `.gitignore` |
 | (implicit) "don't collide with other agents" | `CODE_OF_CONDUCT.md`, branch/staging rules, CI guard that rejects PRs touching shared files |
 
@@ -103,7 +151,7 @@ Your final message must answer the five self-audit questions in docs/NO_STOPPING
 
 ## 3. What the agent *should not* need to ask you
 
-- Which model to make → it picks a specific, referenceable, iconically shaped asset and records it in `ROADMAP.md`.
+- Which model to make → **it is assigned one** by the brief queue (`BRIEFS.md`); it never invents a subject while briefs exist.
 - Realistic or stylised → stylised-realistic / game-ready PBR by default, declared in the README.
 - Units, scale, origin → metric metres, origin at ground centre, +Y up on export.
 - Poly budget → per-category table in `STANDARDS.md` §1.

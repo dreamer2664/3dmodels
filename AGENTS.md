@@ -139,18 +139,34 @@ a trail of `_v2`, `_final`, `_FINAL_ok` files.
 
 Each step has a gate. Do not skip ahead — later steps assume earlier ones passed.
 
-### Step 1 — Claim and plan
-- Pick a slug for yourself (e.g. `agent_atlas`). If the folder exists and is not yours, pick another
-  slug. You never take over an existing workspace.
-- Create `agent_<slug>/ROADMAP.md` from [`templates/02_ROADMAP_TEMPLATE.md`](./templates/02_ROADMAP_TEMPLATE.md).
-  List the asset you'll build first, 2–3 alternates, and the categories from
-  [`STANDARDS.md`](./STANDARDS.md) you plan to touch.
-- Choose an asset that is **specific, buildable, and referenceable**. "A spaceship" is not a package;
-  "single-seat utility shuttle, 9.2 m long, hard-surface, weathered white/grey livery" is.
-- Write 3–6 lines in ROADMAP.md on **what real-world reference you will consult** (photos, museum
-  objects, real products, blueprints, anatomy references). Originality is required; ignorance is not.
+### Step 1 — Take your assignment (do not invent a subject)
+The repo owner assigns work through a brief queue. **You do not choose what to make** unless you are
+told to.
 
-**Gate 1:** ROADMAP.md exists, asset is specific, references listed.
+```bash
+python tools/claim_brief.py --next --agent <your-slug>     # assigns you the next brief
+```
+
+That command moves a brief from `BRIEFS/OPEN/` to `BRIEFS/CLAIMED/`, writes a lock file (so no other
+agent can take the same brief), creates `agent_<slug>/<package>/` with `model/` and `renders/`, and
+copies the README template in. Full mechanics: [`BRIEFS.md`](./BRIEFS.md).
+
+**Build exactly what the brief says.** Match its `slug`, `title`, `dimensions_m`, `must_have` and
+`avoid`. If your prompt names an asset explicitly, that overrides the queue ("brief #0") — record
+`brief_source: prompt` in the package README front-matter.
+
+If there is no brief and none arrives, in this order: (1) ask for one in your PR/issue and stop
+cleanly, (2) generate one from a pack (`python tools/brief_from_pack.py packs/basic-props.pack --count 1`),
+(3) write your own with `python tools/claim_brief.py --new "<Asset Title>" --agent <slug>` and then
+**fill in every field** — a vague brief produces a vague model.
+
+- Pick a slug for yourself (e.g. `agent_atlas`). If the workspace folder exists and is not yours, pick
+  another slug. You never take over an existing workspace.
+- `ROADMAP.md` is created for you; add the brief's id/slug to the "Current package" table and note the
+  references you will consult.
+
+**Gate 1:** a brief is claimed (it is in `BRIEFS/CLAIMED/` with your lock file), the package folder
+exists, and ROADMAP.md names the brief and its references.
 
 ### Step 2 — Reference and blockout
 - Gather references **for your own eyes** only (do not commit copyrighted images unless they are
@@ -240,7 +256,16 @@ git push -u origin agent_<slug>/<package>
 - Never commit: `.blend1` backups, `__pycache__`, `*.tmp`, renders you rejected, huge `.exr`
   intermediates, or your local token/`.env`.
 
-**Gate 10:** PR open, CI green, PR description references the package path.
+### Step 10b — Deliver the brief
+```bash
+python tools/claim_brief.py --deliver <brief-id> --agent <your-slug>
+git add BRIEFS agent_<slug> && git commit -m "feat(<package>): deliver brief <brief-id>"
+```
+The brief moves to `BRIEFS/DELIVERED/` with the package path and render count recorded. That is the
+owner's audit trail — without it they cannot tell whether you built what they asked for.
+
+**Gate 10:** PR open, CI green, PR description references the package path and brief id, brief moved
+to `BRIEFS/DELIVERED/` and committed.
 
 ---
 

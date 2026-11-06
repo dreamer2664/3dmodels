@@ -30,6 +30,8 @@ formats: [glb, blend]
 render_count: <0>
 render_min_resolution: <1600>
 software: [<Blender 4.2>, <Cycles>]
+brief: "<brief id or 'none'>"
+brief_source: owner            # owner | pack | agent | prompt  (where the subject came from)
 ---
 
 # <Model Name>

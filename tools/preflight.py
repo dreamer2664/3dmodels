@@ -421,6 +421,46 @@ def validate_package(pkg_dir: Path, res: Result, min_res: int) -> None:
                             f"({delta*100:.0f}% off) — keep the front-matter accurate"
                         )
 
+    # ---------------- brief linkage (informational) ----------------
+    briefs_root = HERE.parent / "BRIEFS"
+    if briefs_root.is_dir():
+        claimed = list((briefs_root / "CLAIMED").glob(f"*{name}.md")) \
+            if (briefs_root / "CLAIMED").is_dir() else []
+        delivered = list((briefs_root / "DELIVERED").glob(f"*{name}.md")) \
+            if (briefs_root / "DELIVERED").is_dir() else []
+        if claimed:
+            res.note(f"brief: {claimed[0].name} is still in BRIEFS/CLAIMED — "
+                     f"run: python tools/claim_brief.py --deliver <id> once this is pushed")
+            brief_text = claimed[0].read_text(encoding="utf-8", errors="replace")
+            must = []
+            in_must = False
+            for line in brief_text.splitlines():
+                if line.startswith("must_have:"):
+                    in_must = True
+                    continue
+                if in_must:
+                    if line.startswith("  - "):
+                        must.append(line[4:].strip().strip('"').strip("'"))
+                    elif line and not line.startswith((" ", "\t", "-")):
+                        in_must = False
+            readme_low = (readme.read_text(encoding="utf-8", errors="replace").lower()
+                          if readme.is_file() else "")
+            absent = [m for m in must
+                      if readme_low and not any(w in readme_low
+                                                for w in m.lower().split() if len(w) > 4)]
+            if absent:
+                res.warn(
+                    "brief must_have item(s) not mentioned in this package's README — "
+                    "did you build what was asked? "
+                    + "; ".join(a[:60] for a in absent[:3])
+                )
+        elif delivered:
+            res.note(f"brief: {delivered[0].name} delivered")
+        else:
+            res.warn("no matching brief in BRIEFS/CLAIMED or BRIEFS/DELIVERED — "
+                     "this package was not built from an owner brief "
+                     "(allowed, but the brief queue is the preferred path: BRIEFS.md)")
+
     # ---------------- hygiene ----------------
     for p in pkg_dir.rglob("*"):
         parts = set(p.relative_to(pkg_dir).parts)

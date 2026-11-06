@@ -130,14 +130,16 @@ jobs:
           git fetch --no-tags --depth=50 origin "${{ github.base_ref }}" || true
           CHANGED=$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD || true)
           echo "$CHANGED"
+          # allowed in an agent PR: its workspace, the brief it claims/delivers, the generated index
           BAD=$(printf '%s\n' "$CHANGED" \
-            | grep -vE '^(agent_[A-Za-z0-9_]+/|README\.md$)' \
+            | grep -vE '^(agent_[A-Za-z0-9_]+/|BRIEFS/(CLAIMED|DELIVERED)/|README\.md$)' \
             | grep -vE '^$' || true)
           if [ -n "$BAD" ]; then
             echo "::error::This PR modifies files outside agent_*/ workspaces:"
             echo "$BAD"
-            echo "Shared files (AGENTS.md, STANDARDS.md, docs/, tools/, templates/, .github/) may only"
-            echo "be changed by the repo maintainer in a dedicated PR. See AGENTS.md §0 rule 9."
+            echo "Shared files (AGENTS.md, STANDARDS.md, docs/, tools/, templates/, .github/, BRIEFS/OPEN/)"
+            echo "may only be changed by the repo maintainer in a dedicated PR. Agents may add their own"
+            echo "BRIEFS/CLAIMED/ and BRIEFS/DELIVERED/ moves. See AGENTS.md §0 rule 9 and BRIEFS.md."
             exit 1
           fi
           echo "OK — changes are confined to agent workspaces."
