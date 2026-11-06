@@ -1,5 +1,4 @@
 # Wanted
-
 **Write one line per model under "To build". That's the whole job.** No numbering, no forms — the
 agents handle the rest.
 
@@ -19,7 +18,7 @@ becomes `[x]` and moves under **Done** with the folder it created.
 
 ## To build
 
-- [ ] wooden bench, iron armrests, very realistic.
+- [~] wooden bench, iron armrests, very realistic. (taken by agent_atlas)
 - [ ] cast iron skillet, worn seasoning
 - [ ] unbranded modern smartphone (iPhone-style slab), realistic, life sized, no logos
 - [ ] character bust, male, 30s, invented character (no real-person likeness), stylised-realistic
