@@ -94,9 +94,14 @@ jobs:
           blender --version
           blender -b --factory-startup --python-expr \
             "import bpy, numpy; print('bpy', bpy.app.version_string, 'numpy', numpy.__version__)"
-          echo "::group::render_rig.py help"
-          blender -b --factory-startup --python tools/render_rig.py -- --help 2>&1 | tail -5 || true
-          echo "::endgroup::"
+          # End-to-end smoke test of the render rig on Blender's default cube at 64 px:
+          # one view, no denoise, no extra passes. Must write a file and exit 0.
+          rm -rf /tmp/rig_smoke && mkdir -p /tmp/rig_smoke
+          blender -b --factory-startup --python tools/render_rig.py -- \
+            --res 64 --samples 1 --views 01 --no-denoise \
+            --wireframe False --scale-ref False --out /tmp/rig_smoke
+          test -s /tmp/rig_smoke/01-hero-three-quarter.png
+          echo "render rig smoke test: OK"
 
       - name: Verify the root README index is in sync
         run: |

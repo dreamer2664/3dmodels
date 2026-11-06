@@ -48,6 +48,10 @@ def arg(flag, default):
     return type(default)(raw)
 
 
+if "--help" in argv or "-h" in argv:
+    print(__doc__)
+    raise SystemExit(0)
+
 RES = arg("--res", 2400)
 SAMPLES = arg("--samples", 128)
 MARGIN = arg("--margin", 0.10)            # fraction of frame left empty on each side
@@ -66,6 +70,9 @@ RIG_PREFIX = "rig_"
 
 os.makedirs(OUT, exist_ok=True)
 scene = bpy.context.scene
+if RES < 320:
+    print(f"[rig] NOTE: --res {RES} is smoke-test territory; "
+          f"docs/RENDER_SPEC.md requires >= 1600 for a real package")
 
 
 # --------------------------------------------------------------------------- #
@@ -474,27 +481,32 @@ def post_denoise(paths, strength=POST_DENOISE):
 
 
 def finalise_images(paths):
-    """Guarantee every image is at least the required resolution and square.
+    """Report images that came out below the required resolution.
 
-    If a render came back below RES (Blender ignores resolution when a saved .blend
-    overrides percentage, or a tile pass wrote a smaller buffer), upscale/correct with
-    Blender's image API so the package still meets docs/RENDER_SPEC.md.
+    Deliberately does NOT upscale: an upscaled 400px render is still a 400px render, and
+    silently inflating it would let a cheap render pass tools/preflight.py. If a view is
+    smaller than RES, re-render it — Blender occasionally writes a reduced buffer when the
+    saved .blend carries a resolution_percentage override, so force it back to 100%:
+        blender -b model/<name>.blend --python-expr \
+          "import bpy; s=bpy.context.scene; s.render.resolution_percentage=100"
     """
+    undersized = []
     for path in paths:
         if not os.path.exists(path):
             continue
         try:
             img = bpy.data.images.load(path, check_existing=False)
+            w, h = img.size
+            bpy.data.images.remove(img)
         except Exception:
             continue
-        w, h = img.size
-        if w < RES or h < RES or w != h:
-            img.scale(RES, RES)
-            img.filepath_raw = path
-            img.file_format = "PNG"
-            img.save()
-            print(f"[rig] rescaled {os.path.basename(path)} from {w}x{h} to {RES}x{RES}")
-        bpy.data.images.remove(img)
+        if w < RES or h < RES:
+            undersized.append((os.path.basename(path), w, h))
+    if undersized:
+        print("\n[rig] UNDERSIZED RENDERS (not acceptable for a package):")
+        for name, w, h in undersized:
+            print(f"  {name:<28} {w}x{h} < {RES}x{RES}")
+        print("[rig] Re-render these views at the target size. Do not upscale them.")
 
 
 def check_framing(cams):
