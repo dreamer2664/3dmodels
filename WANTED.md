@@ -21,8 +21,8 @@ becomes `[x]` and moves under **Done** with the folder it created.
 
 - [ ] wooden bench, iron armrests, very realistic.
 - [ ] cast iron skillet, worn seasoning
-- [ ] iphone, realistic, life sized
-- [ ] person, hyper realistic. male, 30 years old, caucasian.
+- [ ] unbranded modern smartphone (iPhone-style slab), realistic, life sized, no logos
+- [ ] character bust, male, 30s, invented character (no real-person likeness), stylised-realistic
 ## Done
 
 <!-- Finished models move here automatically. Leave this heading alone.

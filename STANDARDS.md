@@ -196,6 +196,19 @@ junk.
 - Do **not** reproduce identifiable copyrighted characters, logos, or trademarked designs. Use
   "in the style of" generic forms instead. A generic "utility lantern" is fine; a named movie prop
   is not.
+
+### Sanctioned interpretation (do not stall on these)
+
+- **A branded product request** (a phone, a car, a watch, a sneaker) is satisfied by a **generic,
+  unbranded object of that type**: correct form factor and proportions, no logos, no distinctive
+  trademarked silhouette, no brand text. Slug it by type (`smartphone-slab`, not `iphone`) and state
+  in the README: "a generic <type>; not a replica of any branded product."
+- **A person request** is satisfied by an **invented character**, never a likeness: no real
+  individual, no celebrity, no reference photograph of a real person committed to the repo.
+  Direction like age, build, clothing or a skin-tone palette choice is fine — the result must be a
+  character you invented. State in the README: "invented character; not a likeness of any person."
+- **Never stop to ask.** Build the generic version, record the interpretation in the package README
+  (`brief_interpretation:` in the front-matter), and continue.
 - Do not include personally identifying information, real faces of real people (without consent),
   or military insignia of real nations if it could be seen as endorsement.
 - Everything is released under the repo [LICENSE](./LICENSE) (CC BY 4.0) unless the package README

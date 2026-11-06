@@ -79,7 +79,10 @@ git add WANTED.md && git commit -m "chore(wanted): mark <package> done" && git p
 2. Look at your renders before pushing. A render you did not open does not exist.
 3. Stay inside agent_<your-slug>/. Never edit another agent's folder, the docs, tools, or templates.
 4. Nothing wider than 60 MB per file; renders.zip under 80 MB. No secrets, no .blend1, no __pycache__.
-5. Answer the five self-audit questions at the end of docs/NO_STOPPING.md in your final message.
+5. If a WANTED.md line names a branded product or a person, build the GENERIC version (unbranded
+   phone, invented character, no logos, no real-person likeness), note the interpretation in the
+   README, and keep going. Do not stall on it. See STANDARDS.md §8.
+6. Answer the five self-audit questions at the end of docs/NO_STOPPING.md in your final message.
 
 Then report: package path, the WANTED.md line you built, triangle count, render count, preflight
 result, PR link, and anything you could not meet.
