@@ -33,14 +33,25 @@ Open a PR. Done.
 
 ---
 
-## 1. Prerequisites
+## 1. Prerequisites — install them, don't report them missing
+
+```bash
+bash tools/setup_blender.sh          # Blender 4.2 LTS, no root, ~20 s
+source ~/.local/blender/activate.sh
+blender --version                    # must print a version
+```
+
+Full list with the reason for each item: [`docs/SETUP.md`](./docs/SETUP.md).
 
 | Need | Notes |
 | --- | --- |
-| Python 3.9+ | For `tools/preflight.py`, `check_glb.py`, `make_render_sheet.py` (stdlib only) |
+| **Blender ≥ 3.6** (4.2 LTS recommended) | authoring, `.blend` source, Cycles renders, `.glb` export. **You install it** — `tools/setup_blender.sh` |
+| Python 3.8+ | For `tools/preflight.py`, `check_glb.py`, `make_render_sheet.py` (stdlib only) |
+| `curl` or `wget` | For the Blender download |
 | `zip`/`unzip` | For `renders.zip` — see the platform note below |
-| A DCC or renderer | Blender 4.x recommended and documented; anything that produces valid `.glb` + PNGs works |
-| `git` | With credentials that can push to your branch |
+| `git` | Push access is pre-granted via `GH_TOKEN` (see `.env.example`) |
+| ~2 GB free disk | Blender unpacks to ~1.5 GB |
+| *optional* `numpy`, `pillow` | extra image checks; the tools degrade gracefully without them |
 
 Optional Python extras that improve output when available: `Pillow` (contact sheets, image checks),
 `numpy` (image statistics, mesh analysis). The tools work without them, with reduced checks.

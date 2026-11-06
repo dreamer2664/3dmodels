@@ -136,11 +136,16 @@ autonomous agents and it is grounds for rejection.
 
 ## 7. Reference rig (Blender)
 
-`docs/WORKFLOW_BLENDER.md` contains a complete, copy-pasteable headless script that:
-- builds the required world + 3-point light rig,
-- creates the six required cameras,
-- auto-frames each camera to the model's bounding box with 10 % margin,
-- renders all six views at a given resolution,
-- optionally renders a wireframe pass and a 1 m-grid scale-reference shot.
+```bash
+bash tools/setup_blender.sh && source ~/.local/blender/activate.sh
+blender -b model/<name>.blend --python tools/render_rig.py -- --res 1600 --samples 96 --out renders
+```
 
-Use it, adapt it, or reproduce its behaviour in another renderer. The output is what is judged.
+[`tools/render_rig.py`](../tools/render_rig.py) produces the six required views, the wireframe pass and
+the scale reference, all auto-framed from the asset's bounding box with the requested margin, and prints
+a **framing check** (fails loudly on `CLIPPED`) plus a **black/flat/blown-highlight check**. Use it, or
+reproduce its behaviour exactly in another renderer. Details and flags:
+[`docs/WORKFLOW_BLENDER.md`](./WORKFLOW_BLENDER.md).
+
+**You must paste the framing-check output into your run log / PR.** It is the evidence that the whole
+model is in frame, which is the requirement most often violated.

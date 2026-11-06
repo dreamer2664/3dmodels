@@ -9,12 +9,22 @@ If a corner is cut, the PR does not merge.
 
 > 🛑 **AGENT: READ THIS FIRST.** If you are an AI agent that was told "go to the repo `3dmodels`,
 > make a folder called `agent_something`, and make some models" — do **not** start modelling yet.
+>
+> **Two rules that override everything else:**
+> **(A)** There is no Blender preinstalled and that is not a blocker — run
+> `bash tools/setup_blender.sh` (~20 s, no root) and read [`docs/SETUP.md`](./docs/SETUP.md).
+> **(B)** You finish the model in **one run**: `.glb` + `.blend` + ≥5 renders + zip + README +
+> green preflight + pushed PR, or the package does not count. Read
+> [`docs/NO_STOPPING.md`](./docs/NO_STOPPING.md) before you start.
+>
 > Read, in this order:
 >
 > 1. [`AGENTS.md`](./AGENTS.md) — your operating contract, workspace layout, and the definition of done. **(mandatory)**
-> 2. [`CONTRIBUTING.md`](./CONTRIBUTING.md) — the exact step-by-step procedure for submitting a model.
-> 3. [`STANDARDS.md`](./STANDARDS.md) — the technical quality bar every asset is measured against.
-> 4. [`docs/MODEL_SPEC.md`](./docs/MODEL_SPEC.md) — required content of each model's `.md` write-up
+> 2. [`docs/NO_STOPPING.md`](./docs/NO_STOPPING.md) — the one-run rule and the exhaustion ladder. **(mandatory)**
+> 3. [`docs/SETUP.md`](./docs/SETUP.md) — install the toolchain yourself (one command).
+> 4. [`CONTRIBUTING.md`](./CONTRIBUTING.md) — the exact step-by-step procedure for submitting a model.
+> 5. [`STANDARDS.md`](./STANDARDS.md) — the technical quality bar every asset is measured against.
+> 6. [`docs/MODEL_SPEC.md`](./docs/MODEL_SPEC.md) — required content of each model's `.md` write-up
 >    (worked example: [`docs/EXAMPLE_PACKAGE_README.md`](./docs/EXAMPLE_PACKAGE_README.md)).
 >
 > Then run `python tools/preflight.py <your-folder>` before you push. **Preflight failing = you are not done.**
@@ -72,12 +82,15 @@ Full numbers and per-category rules: [`STANDARDS.md`](./STANDARDS.md).
 
 ```
 README.md                  ← you are here: what this repo is and how to start
-AGENT_PROMPT.md            ← drop-in kickoff prompt + prompt→requirement mapping
+AGENT_PROMPT.md            ← drop-in kickoff prompt (with PAT placeholder) + requirement mapping
 AGENTS.md                  ← operating contract for autonomous agents (READ FIRST)
+.env.example               ← GH_TOKEN placeholder + install paths (copy to .env, never commit)
 CONTRIBUTING.md            ← step-by-step submission procedure
 STANDARDS.md               ← technical + visual quality standards
 CODE_OF_CONDUCT.md         ← collaboration rules between parallel agents
 docs/
+  NO_STOPPING.md           ← one-run rule, exhaustion ladder, self-audit (READ SECOND)
+  SETUP.md                 ← how to install Blender and the helpers, package by package
   MODEL_SPEC.md            ← required content of every model's README.md
   RENDER_SPEC.md           ← required cameras, lighting, and framing for renders
   WORKFLOW_BLENDER.md      ← how to author + dump cameras/renders headless in Blender
@@ -88,6 +101,9 @@ templates/
   01_MODEL_README_TEMPLATE.md
   02_ROADMAP_TEMPLATE.md
 tools/
+  setup_blender.sh         ← installs headless Blender 4.2 LTS, no root required
+  render_rig.py            ← studio + 6 required cameras + framing checks, runs inside Blender
+  denoise_images.py        ← low-memory render cleanup when OIDN is OOM-killed
   preflight.py             ← local validator: run before every push
   check_glb.py             ← GLB/GLTF inspector (meshes, materials, textures, bounds)
   make_render_sheet.py     ← builds a contact sheet so you can eyeball every render at once
@@ -111,6 +127,8 @@ packages on disk (see `tools/preflight.py --index`).
 
 ## Rules of the road (short version)
 
+0. **Install your toolchain** (`tools/setup_blender.sh`) and **finish in one run** — see the two rules
+   at the top of this file. "No Blender here" and "I'll finish next session" are both failures.
 1. **Never touch another agent's folder.** No edits, no refactors, no "while I was in there".
 2. **One package = one asset.** Don't dump three unrelated models into one folder.
 3. **Verify your renders with your own eyes** (open the image, look at it) before you push. A

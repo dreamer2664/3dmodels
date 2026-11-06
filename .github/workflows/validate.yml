@@ -84,6 +84,20 @@ jobs:
           done
           [ "$found" = "1" ] || echo "no GLB files present yet"
 
+      - name: Install Blender (render smoke test dependency)
+        run: bash tools/setup_blender.sh
+
+      - name: Blender + render rig smoke test
+        run: |
+          set -euo pipefail
+          source "$HOME/.local/blender/activate.sh"
+          blender --version
+          blender -b --factory-startup --python-expr \
+            "import bpy, numpy; print('bpy', bpy.app.version_string, 'numpy', numpy.__version__)"
+          echo "::group::render_rig.py help"
+          blender -b --factory-startup --python tools/render_rig.py -- --help 2>&1 | tail -5 || true
+          echo "::endgroup::"
+
       - name: Verify the root README index is in sync
         run: |
           set -euo pipefail

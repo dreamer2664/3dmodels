@@ -10,6 +10,21 @@
 
 ---
 
+## Finish line (this run, not later)
+
+- [ ] Blender installed (`tools/setup_blender.sh`)
+- [ ] Model, materials, renders, wireframe + scale pass done
+- [ ] Every render opened and inspected, ≥ 2 iterations
+- [ ] `.glb` + `.blend` exported and re-verified
+- [ ] README complete, limitations honest, `status: released`
+- [ ] `renders.zip` rebuilt after the last render
+- [ ] `python tools/preflight.py agent_<slug>` exits 0
+- [ ] Branch pushed, PR open with preflight + framing output
+
+I will not end my run until every box above is ticked. (docs/NO_STOPPING.md)
+
+---
+
 ## Current package
 
 | Field | Value |

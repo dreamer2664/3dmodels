@@ -14,6 +14,13 @@ this list. Unchecked boxes mean the package is not done; dishonest ticks mean it
 - [ ] No `.blend1`, `__pycache__`, `.DS_Store`, temp files, or rejected renders committed.
 - [ ] No file exceeds 60 MB; `renders.zip` is under 80 MB and opens cleanly.
 
+## A2. Toolchain
+
+- [ ] Blender installed by me in this run via `tools/setup_blender.sh` (version recorded in README).
+- [ ] Rendered with Cycles on CPU; no view dropped because of render time.
+- [ ] `render_rig.py` framing check pasted into the run log / PR and all views `ok`.
+- [ ] Output sanity check showed `ok` for every image (no BLACK / FLAT-EMPTY / BLOWN HIGHLIGHTS).
+
 ## B. Model
 
 - [ ] Real-world metric scale, verified against a reference (grid floor, known dimension, human scale).
@@ -67,6 +74,14 @@ this list. Unchecked boxes mean the package is not done; dishonest ticks mean it
 - [ ] Usage notes tell a technical artist how to import and any gotchas.
 - [ ] No `TODO`/`TBD`/placeholder text anywhere.
 - [ ] Licence and credits stated; confirms no third-party mesh data.
+
+## F2. Finished, not abandoned
+
+- [ ] Front-matter `status: released` (not `draft`).
+- [ ] No "coming soon", "to be added", "next session", "work in progress", "WIP" or similar.
+- [ ] `renders.zip` rebuilt after the last change to `renders/` (newer than the newest PNG).
+- [ ] Nothing in the package is blockout geometry, or a placeholder stand-in for a finished part.
+- [ ] The work was completed in one run; no step was deferred to a later session.
 
 ## G. Validation & publication
 

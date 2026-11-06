@@ -33,6 +33,48 @@ The full drop-in prompt to hand to an agent lives in [`AGENT_PROMPT.md`](./AGENT
 
 ---
 
+## 0a. Two rules that override everything else
+
+### Rule A — Install the toolchain. Do not report it missing.
+
+The sandbox has no Blender. That is normal and it is your job:
+
+```bash
+bash tools/setup_blender.sh && source ~/.local/blender/activate.sh && blender --version
+```
+
+One command, ~20 seconds, no root. It also fixes the usual missing-library failures
+(`libxkbcommon.so.0`, `libGL.so.1`) by unpacking the right `.deb`s locally. Details and the full
+package list: [`docs/SETUP.md`](./docs/SETUP.md).
+
+- **Unacceptable:** "There is no Blender in this sandbox, so I cannot continue."
+- **Acceptable:** "`setup_blender.sh` failed with &lt;exact error&gt; after &lt;these steps&gt;; here is the output."
+
+Renderer: **Cycles on CPU**. EEVEE has no GL surface in a headless container and fails with
+`EGL_BAD_MATCH`. Never drop a view because a render is slow — lower `--samples`/`--res` instead.
+
+### Rule B — Finish the model in one run. No partial packages.
+
+You have many hours. Use them. A package is **complete or it does not exist** (full rules:
+[`docs/NO_STOPPING.md`](./docs/NO_STOPPING.md)).
+
+Non-negotiable completion bar, in the **same session** as starting the model:
+
+- `.glb` + `.blend` + ≥ 5 renders ≥ 1600² + `renders.zip` + finished `README.md`, all present;
+- every render opened and inspected, at least two iterations;
+- `python tools/preflight.py agent_<slug>` exits 0;
+- branch pushed and PR open.
+
+Ending the run with "I'll continue next session", 3 renders, a missing zip, a TBD in the README, or
+blockout geometry is a **failed run**, not partial credit. If something breaks, work the exhaustion
+ladder in `docs/NO_STOPPING.md` §3 — install, retry, reduce render cost, simplify the asset — and keep
+going. **Never abandon the deliverables.**
+
+Push access is pre-granted: `GH_TOKEN` in your environment may be used for clone/commit/push/PR
+(placeholder in [`.env.example`](./.env.example)). Never commit the token.
+
+---
+
 ## 0. TL;DR — the 12 non-negotiables
 
 1. Your work lives **only** inside `agent_<your-slug>/`, one subfolder per model package.
@@ -49,9 +91,10 @@ The full drop-in prompt to hand to an agent lives in [`AGENT_PROMPT.md`](./AGENT
    `templates/`, `tools/`, or `.github/`. Propose changes as a separate PR if you believe they're wrong.
 10. **No binaries over 60 MB** per file, and no `renders.zip` over 80 MB. Git history is forever.
 11. Commit messages follow Conventional Commits; one PR per workspace milestone.
-12. If you genuinely cannot meet a standard (tool missing, render GPU unavailable), **ship what you
-    can, state the gap explicitly in the package README's Limitations section, and say so in the PR
-    description.** Silent failure is the only unforgivable outcome.
+12. **Install your own toolchain** (Rule A) and **finish in one run** (Rule B). If you still hit a wall
+    after the exhaustion ladder, ship the complete deliverable set at a reduced scope, state the gap
+    explicitly in the package README's Limitations section and in the PR, and say so in your final
+    message. Silent failure and half-built packages are the only unforgivable outcomes.
 
 ---
 
@@ -236,8 +279,9 @@ The person who pointed you here does not want a design consultation. They want a
 | Renderer | Whatever your environment supports, as long as output meets RENDER_SPEC.md. EEVEE/Cycles/Blender headless/three.js renderer are all acceptable. |
 | Scope creep | Out of scope: rigging, animation, LODs, physics colliders, game-engine integration. Only include if the package's README says so. |
 
-**Escalate to a human PR comment (don't block) only when:** you cannot push, the repo has a policy that
-contradicts these docs, or the requested asset would require licensed third-party data.
+**Escalate to a human PR comment (don't block) only when:** the push is rejected with an authentication
+error you cannot resolve, the repo has a policy that contradicts these docs, or the asset would require
+licensed third-party data. Note that a *missing tool* is never an escalation — it is an install step.
 
 **Never escalate for:** "what colour?", "how detailed?", "should I add a stand?", "which angle?".
 Make a defensible choice, document it, move on.
@@ -263,6 +307,9 @@ Assume other agents are pushing to this repo at the same time as you.
 
 | Tool | What it does |
 | --- | --- |
+| `tools/setup_blender.sh` | Installs Blender 4.2 LTS headless (no root, resolves missing shared libs), writes `~/.local/blender/activate.sh`. Run this first. |
+| `tools/render_rig.py` | Runs inside Blender: builds the studio, the six required cameras auto-framed from the asset bounds, renders the set plus wireframe and 1 m scale reference, then prints a framing check and a black/flat/blown-highlight check. |
+| `tools/denoise_images.py` | Standalone low-memory denoise for renders on machines where OIDN is OOM-killed (`python3 tools/denoise_images.py renders/`). |
 | `tools/preflight.py` | Full local validation of a workspace/package: layout, naming, render count/size, zip integrity, README sections, GLB sanity, file-size limits. |
 | `tools/check_glb.py` | Standalone GLB/glTF inspector: node/mesh/material/texture counts, triangle count, bounding box in metres, up-axis check. |
 | `tools/make_render_sheet.py` | Builds `contact-sheet.jpg` from `renders/` so you can review everything in one look. |

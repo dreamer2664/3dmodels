@@ -9,46 +9,76 @@
 
 ## 1. Drop-in prompt (paste this to your agent)
 
+Everything between the lines is the message. Replace `<PASTE_PAT_HERE>` with the token.
+
 ```
-You are contributing 3D models to the repository https://github.com/dreamer2664/3dmodels .
+You are an autonomous agent contributing 3D models to https://github.com/dreamer2664/3dmodels
 
-Before you create anything, read these files in order and treat them as binding:
-  1. AGENTS.md               (operating contract, folder layout, definition of done)
-  2. STANDARDS.md            (technical and visual quality bar)
-  3. CONTRIBUTING.md         (exact step-by-step procedure)
-  4. docs/MODEL_SPEC.md      (what the package README must contain)
-  5. docs/RENDER_SPEC.md     (required camera views, lighting, framing)
-  6. templates/01_MODEL_README_TEMPLATE.md
-Do not ask me questions about scope, style, colour or detail level — the documents decide those.
+## Credentials
+A GitHub fine-grained personal access token for this repo is provided below. I grant you
+explicit permission to use it to clone, commit, push branches and open pull requests in
+this repository. You do not need to ask me for permission for any git operation.
+Never commit the token, never write it into a file inside the repo, and never print it in
+a PR body or README. Read it from the environment variable GH_TOKEN.
 
-Your task:
-  - Create your own workspace folder at the repo root named "agent_<your-slug>" (lowercase, e.g.
-    agent_atlas). Never modify another agent's workspace or any shared file.
-  - Inside it, create one subfolder per model, named in kebab-case after the asset
-    (e.g. brass-portable-lantern). One folder = one asset.
-  - Build the model from scratch at real-world metric scale, with clean deliberate topology,
-    believable PBR materials and bevels on every hard edge. No downloaded or AI-generated meshes.
-  - Render at least 5 images at 1600x1600 or larger, covering the entire model with an 8-12% margin:
-    hero three-quarter, front, side, back, top, plus a detail or wireframe shot. Three-point lighting,
-    opaque neutral background, contact shadow, no clipping, no noise.
-  - LOOK AT EVERY RENDER BEFORE YOU PUSH. Open the images, inspect them, and iterate until they are
-    presentable. A render you have not opened does not exist. Build the contact sheet with
-    tools/make_render_sheet.py and inspect that too.
-  - Put the curated renders in renders/ AND in a flat renders.zip (at least 5 images, under 80 MB).
-  - Ship model/<name>.glb (self-contained, re-imported and verified) and model/<name>.blend
-    (packed textures, clean scene, no default objects).
-  - Write <package>/README.md from templates/01_MODEL_README_TEMPLATE.md, filling every section,
-    including an honest Limitations section. No TODO, TBD or placeholder text.
-  - Run `python tools/preflight.py agent_<your-slug>` and fix everything until it exits 0.
-  - Push to a branch named agent_<your-slug>/<package> and open a PR using the repo's PR template
-    with the preflight output pasted in. Do not push unreviewed work to main.
+GH_TOKEN=<PASTE_PAT_HERE>
 
-If something in the standards is impossible in your environment, ship what you can, say exactly what
-you could not meet in the package README's Limitations section AND in the PR description, and
-continue. Never invent results, never claim a check you did not run, and never commit a secret.
+## Read first (binding documents, in this order)
+1. AGENTS.md            - operating contract, folder layout, definition of done
+2. docs/NO_STOPPING.md  - you must finish the model in ONE run: no stopping, no partial packages
+3. docs/SETUP.md        - how to install the toolchain; run tools/setup_blender.sh
+4. STANDARDS.md         - the quality bar (this is demanding on purpose)
+5. docs/MODEL_SPEC.md   - what the model README must contain
+6. docs/RENDER_SPEC.md  - required views, lighting, framing
+Do not ask me about scope, style, colour, detail level or camera angles. Those documents decide.
+
+## Toolchain: install it, do not report it missing
+The sandbox will not have Blender preinstalled. That is expected and it is your job to fix:
+    bash tools/setup_blender.sh
+    source ~/.local/blender/activate.sh
+    blender --version        # must print a version
+The script downloads Blender 4.2 LTS, resolves missing shared libraries without root, and
+verifies it runs. Use Cycles on CPU (EEVEE has no GPU surface in a sandbox).
+"There is no Blender in this sandbox" is not an acceptable report. Only "setup_blender.sh
+failed with <exact error> after <these steps>" is, and only after you have pasted its output.
+
+## Non-negotiable: finish in one go
+You have many hours available and you are expected to use them. A package is either complete
+or it does not exist. Do not end your run with:
+  - fewer than 5 renders, or renders under 1600x1600, or a missing renders.zip
+  - a missing .glb or a missing .blend
+  - a README with TODOs or missing sections
+  - a model still at blockout level, or "I'll continue in the next session"
+Keep iterating until `python tools/preflight.py agent_<your-slug>` exits 0 and the branch is
+pushed. Stopping early is treated as a failed run, not as partial credit. If something breaks,
+work down the exhaustion ladder in docs/NO_STOPPING.md section 3 - install, retry, reduce
+render cost, simplify the asset. Never abandon the deliverables.
+
+## Your task
+- Create your own workspace at the repo root: agent_<your-slug> (lowercase, e.g. agent_atlas).
+  Never modify another agent's workspace or any shared file.
+- Inside it create one subfolder per model, kebab-case, named after the asset
+  (e.g. brass-portable-lantern). One folder = one asset.
+- Build the model from scratch at real-world metric scale with clean deliberate topology,
+  bevels on every hard edge, believable PBR materials. No downloaded or AI-generated meshes.
+- Render the required set with the provided rig:
+    blender -b model/<name>.blend --python tools/render_rig.py -- --res 1600 --samples 96 --out renders
+  That produces hero 3/4, front, side, back, top, detail, plus a wireframe and a 1 m scale
+  reference, and it prints a framing check (every view must report margin >= ~4%).
+- LOOK AT EVERY RENDER BEFORE YOU PUSH. Open each image. Inspect it. Iterate until the set is
+  presentable. Build the contact sheet (tools/make_render_sheet.py) and inspect that too.
+  Renders you have not opened do not count.
+- Deliver: renders/ + renders.zip (>=5 images, flat archive, <80 MB), model/<name>.glb
+  (self-contained, re-imported and verified), model/<name>.blend (packed, clean scene,
+  no default objects), README.md from templates/01_MODEL_README_TEMPLATE.md with an honest
+  Limitations section.
+- Run `python tools/preflight.py agent_<your-slug>` and fix everything until it exits 0.
+- Push to branch agent_<your-slug>/<package> and open a PR with the preflight output pasted in:
+    git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/dreamer2664/3dmodels.git"
+
+Never invent results, never claim a check you did not run, never commit a secret.
+Your final message must answer the five self-audit questions in docs/NO_STOPPING.md section 6.
 ```
-
----
 
 ## 2. How the original prompt maps to requirements
 
@@ -64,6 +94,9 @@ continue. Never invent results, never claim a check you did not run, and never c
 | "the actual 3d model" | Required deliverables: `<package>.glb` (shippable, re-imported and verified) and `<package>.blend` (editable source, packed textures); `tools/check_glb.py` inspection |
 | "a .MD file explaining what the model depicts" | `<package>/README.md` from `templates/01_MODEL_README_TEMPLATE.md`; required sections and depth defined in `docs/MODEL_SPEC.md`; no placeholders allowed |
 | "Look at the renders before pushing" | Mandatory self-inspection protocol (`docs/RENDER_SPEC.md` §6), contact-sheet review step, ticked checklist in the README, "gaps" field in the PR template |
+| "they say there's no blender in the sandbox" | `docs/SETUP.md` + `tools/setup_blender.sh`: one-command no-root install (Blender 4.2 LTS tarball, shared-library autopair via `apt-get download`), verified end-to-end in a clean sandbox; "not installed" is explicitly an unacceptable report |
+| "they stop halfway" | `docs/NO_STOPPING.md`: one-run rule, list of violations, completion loop, 10-rung exhaustion ladder, credentials pre-granted, time budget, and a 5-question self-audit that must be answered in the final message |
+| (implicit) "they need push access" | PAT placeholder in `.env.example` and in the prompt above, with the owner's explicit written permission to use it; token kept out of the repo tree by `.gitignore` |
 | (implicit) "don't collide with other agents" | `CODE_OF_CONDUCT.md`, branch/staging rules, CI guard that rejects PRs touching shared files |
 
 ---

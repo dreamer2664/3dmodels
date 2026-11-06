@@ -1,11 +1,35 @@
+<!--
+HOW TO USE THIS TEMPLATE
+1. Copy it to agent_YOURSLUG/PACKAGENAME/README.md
+2. Fill the front-matter block below with real values (run tools/check_glb.py for the
+   triangle count and the bounding-box dimensions).
+3. Replace every angle-bracket placeholder and every italic prompt in the body.
+4. Delete this comment.
+5. status must be "released" before you push: a pushed package is a finished package.
+   tools/preflight.py rejects "draft" status, unfinished-package wording, leftover
+   placeholders, missing sections, and a renders.zip older than the newest render.
+-->
+
 ---
-template: model-readme
-instructions: |
-  Copy this file to agent_<your-slug>/<package>/README.md and replace every
-  <angle-bracket> and every italic prompt. Delete the instruction comments.
-  Do not delete sections. Do not leave placeholders. Run
-  `python tools/preflight.py agent_<slug>` — it fails on leftover <...> markers,
-  TODO/TBD, and missing sections.
+model: <package-name>
+package: <package-name>
+workspace: <agent_slug>
+category: <hard-surface-prop | architecture | organic | vehicle | environment | stylised | product-viz>
+version: 1.0.0
+status: released
+author_agent: <agent_slug>
+created: <YYYY-MM-DD>
+license: CC-BY-4.0
+dimensions_m: {x: <0.000>, y: <0.000>, z: <0.000>}
+triangles: <0>
+vertices: <0>
+objects: <0>
+materials: <0>
+textures: <0 or none>
+formats: [glb, blend]
+render_count: <0>
+render_min_resolution: <1600>
+software: [<Blender 4.2>, <Cycles>]
 ---
 
 # <Model Name>
@@ -113,6 +137,8 @@ lighting, neutral dark backdrop.
 ## Usage notes
 
 - **Blender:** `File > Import > glTF 2.0`, or open `model/<package>.blend` directly.
+- **Re-rendering the set:** `blender -b model/<package>.blend --python tools/render_rig.py -- --res 1600 --samples 96 --out renders`
+  (run `bash tools/setup_blender.sh` first — see docs/SETUP.md).
 - **Engines:** game-ready mesh; single material set; <no LODs / LODs included>. Scale factor 1.0,
   metres, +Y up.
 - **Pivots:** parent empty `<asset_name>` at the ground centre; rotate the parent to place the asset.

@@ -19,7 +19,17 @@
 <paste the output of: python tools/preflight.py agent_<slug>>
 ```
 
-## Definition of done
+## Toolchain (Rule A — docs/SETUP.md)
+
+- [ ] Blender installed in this run (`bash tools/setup_blender.sh`) — version: `<4.2.x>`
+- [ ] Renderer used: `Cycles CPU` (EEVEE is not supported headless in a sandbox)
+- [ ] `render_rig.py` framing check: every view reported `ok` (paste below)
+
+```
+<framing check output>
+```
+
+## Definition of done (Rule B — docs/NO_STOPPING.md: finished in one run)
 
 - [ ] Layout matches `AGENTS.md` §1 (mesh, source, renders, zip, README all present)
 - [ ] Every render opened and visually inspected by me (and the contact sheet)
@@ -29,6 +39,9 @@
 - [ ] README complete, no placeholders, limitations stated honestly
 - [ ] `tools/preflight.py` exits 0
 - [ ] Nothing outside my workspace modified
+- [ ] No TODOs, "coming soon", "next session", draft status or other unfinished markers
+- [ ] `renders.zip` rebuilt after the last render change (preflight checks its timestamp)
+- [ ] The five self-audit questions in docs/NO_STOPPING.md §6 answered in the PR body
 
 ## Honest gaps
 

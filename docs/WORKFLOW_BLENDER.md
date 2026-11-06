@@ -101,146 +101,78 @@ Name materials by purpose: `paint_enamel_cream`, `metal_brass_brushed`, `glass_c
 
 ---
 
-## 4. Render rig: world, lights, cameras
+## 4. Render rig: use the shipped, tested one
 
-Full script — save as `tools_render/render_set.py` inside your workspace and run headless.
-It builds a neutral studio, six cameras auto-framed to the asset's bounding box, and renders the
-required set.
+Do not hand-roll the camera maths. [`tools/setup_blender.sh`](../tools/setup_blender.sh) installs
+Blender; [`tools/render_rig.py`](../tools/render_rig.py) builds the studio and renders the compliant
+set:
 
-```python
-"""Render the compliant render set for an asset.
-Usage: blender -b model/asset.blend --python render_set.py -- --res 2400 --samples 128
-"""
-import bpy, sys, math, os
-from mathutils import Vector
-
-argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
-def arg(flag, default):
-    return type(default)(argv[argv.index(flag) + 1]) if flag in argv else default
-
-RES     = arg("--res", 2400)
-SAMPLES = arg("--samples", 128)
-OUT     = arg("--out", os.path.abspath("renders"))
-MARGIN  = arg("--margin", 0.10)          # 10% empty border
-os.makedirs(OUT, exist_ok=True)
-
-scene = bpy.context.scene
-
-# ---------- render settings ----------
-scene.render.engine = 'CYCLES'
-scene.cycles.samples = SAMPLES
-scene.cycles.use_denoising = True
-scene.render.resolution_x = RES
-scene.render.resolution_y = RES
-scene.render.resolution_percentage = 100
-scene.render.film_transparent = False
-scene.render.image_settings.file_format = 'PNG'
-scene.render.image_settings.color_mode = 'RGB'
-scene.render.image_settings.color_depth = '8'
-scene.view_settings.view_transform = 'AgX'      # 'ACES' / 'Filmic' also fine
-
-# ---------- world ----------
-world = bpy.data.worlds.new("studio_world")
-scene.world = world
-world.use_nodes = True
-bg = world.node_tree.nodes["Background"]
-bg.inputs[0].default_value = (0.055, 0.055, 0.062, 1)   # dark neutral, not pure black
-bg.inputs[1].default_value = 0.35
-
-# ---------- floor + backdrop ----------
-bpy.ops.mesh.primitive_plane_add(size=40, location=(0, 0, 0))
-floor = bpy.context.object
-floor.name = "rig_floor"
-floor.data.materials.append(pbr("rig_floor_mat", (0.20, 0.20, 0.21), 0.55, 0.0))
-
-# ---------- three-point lights ----------
-def area(name, loc, energy, size, color=(1, 1, 1)):
-    d = bpy.data.lights.new(name, 'AREA')
-    d.energy = energy; d.size = size; d.color = color
-    o = bpy.data.objects.new(name, d)
-    bpy.context.collection.objects.link(o)
-    o.location = loc
-    # aim at origin
-    direction = Vector((0, 0, 0)) - o.location
-    o.rotation_euler = direction.to_track_quat('-Z', 'Y').to_euler()
-    return o
-
-KEY  = area("rig_key",  (2.6, -3.2, 3.6), 900, 3.0, (1.00, 0.97, 0.92))
-FILL = area("rig_fill", (-3.4, -2.2, 1.6), 260, 4.0, (0.92, 0.95, 1.00))
-RIM  = area("rig_rim",  (-1.4, 3.8, 2.8), 700, 2.5, (0.98, 0.99, 1.00))
-
-# ---------- asset bounds ----------
-meshes = [o for o in bpy.context.scene.objects
-          if o.type == 'MESH' and not o.name.startswith("rig_")]
-coords = [o.matrix_world @ Vector(c) for o in meshes for c in o.bound_box]
-mn = Vector((min(c.x for c in coords), min(c.y for c in coords), min(c.z for c in coords)))
-mx = Vector((max(c.x for c in coords), max(c.y for c in coords), max(c.z for c in coords)))
-center = (mn + mx) / 2
-size   = (mx - mn)
-radius = max(size) / 2 * (1 + MARGIN)
-
-# ---------- camera helper ----------
-def make_cam(name, direction, lens=70, ortho=False, scale=1.0):
-    cam_data = bpy.data.cameras.new(name)
-    cam_data.lens = lens
-    if ortho:
-        cam_data.type = 'ORTHO'
-        cam_data.ortho_scale = max(size) * (1 + 2 * MARGIN) * scale
-    cam = bpy.data.objects.new(name, cam_data)
-    bpy.context.collection.objects.link(cam)
-    d = Vector(direction).normalized()
-    dist = (max(size) * 1.15) / math.tan(math.radians(cam_data.angle / 2)) if not ortho else 10.0
-    cam.location = center + d * max(dist, max(size) * 2.2)
-    cam.rotation_euler = (center - cam.location).to_track_quat('-Z', 'Y').to_euler()
-    return cam
-
-cams = {
-  "01-hero-three-quarter": make_cam("cam_hero",   ( 0.85, -1.00,  0.42), lens=70),
-  "02-front":              make_cam("cam_front",  ( 0.00, -1.00,  0.00), ortho=True),
-  "03-side":               make_cam("cam_side",   (-1.00,  0.00,  0.00), ortho=True),
-  "04-back":               make_cam("cam_back",   ( 0.00,  1.00,  0.00), ortho=True),
-  "05-top":                make_cam("cam_top",    ( 0.00, -0.05,  1.00), ortho=True),
-  "06-detail":             make_cam("cam_detail", ( 0.60, -0.80,  0.30), lens=100),
-}
-
-# tighten the detail cam to the upper third / most interesting area
-detail_target = Vector((center.x, center.y, mn.z + size.z * 0.72))
-cam_d = cams["06-detail"]
-cam_d.location = detail_target + Vector((0.45, -0.70, 0.25)) * max(size)
-cam_d.rotation_euler = (detail_target - cam_d.location).to_track_quat('-Z', 'Y').to_euler()
-cam_d.data.lens = 110
-
-# ---------- render ----------
-for name, cam in cams.items():
-    scene.camera = cam
-    scene.render.filepath = os.path.join(OUT, f"{name}.png")
-    bpy.ops.render.render(write_still=True)
-    print("wrote", scene.render.filepath)
-
-# ---------- optional wireframe pass ----------
-for o in meshes:
-    m = bpy.data.materials.new("wire_tmp")
-    m.use_nodes = True
-    nt = m.node_tree
-    nt.nodes.clear()
-    wire = nt.nodes.new("ShaderNodeWireframe"); wire.inputs[0].default_value = 0.0
-    emis = nt.nodes.new("ShaderNodeEmission"); emis.inputs[0].default_value = (0.05, 0.35, 0.6, 1)
-    out  = nt.nodes.new("ShaderNodeOutputMaterial")
-    nt.links.new(wire.outputs[0], emis.inputs[0])
-    nt.links.new(emis.outputs[0], out.inputs[0])
-    o.data.materials.clear(); o.data.materials.append(m)
-scene.camera = cams["01-hero-three-quarter"]
-scene.render.filepath = os.path.join(OUT, "07-wireframe.png")
-bpy.ops.render.render(write_still=True)
+```bash
+source ~/.local/blender/activate.sh
+blender -b model/<name>.blend --python tools/render_rig.py -- \
+    --res 1600 --samples 96 --out renders
 ```
 
-Notes
-- `~128` samples with denoising is usually clean enough at 2400². Raise it if you see fireflies.
-- If the asset is emissive, run a second pass with emission strength scaled down.
-- For "floating" assets (aircraft, drones) put a subtle floor far below and let the contact shadow be
-  soft — but still present, so the composition is grounded.
+| Flag | Default | Meaning |
+| --- | --- | --- |
+| `--res` | 2400 | square resolution in px (must be ≥ 1600) |
+| `--samples` | 128 | Cycles samples (96 is clean with denoise) |
+| `--margin` | 0.10 | empty border around the asset, per side |
+| `--engine` | CYCLES | `CYCLES` (CPU, works headless) — EEVEE fails without a GPU surface |
+| `--bg` | dark | `dark` or `light` neutral backdrop |
+| `--wireframe` | true | also render `07-wireframe.png` |
+| `--scale-ref` | true | also render `08-scale-reference.png` with a 1 m grid |
+| `--detail-at` | 0.70 | height fraction the detail camera aims at |
+| `--views` | `all` | render a subset, e.g. `--views 01,02` (batch rendering when memory is tight) |
+| `--no-denoise` | false | force the low-RAM path (OIDN off, built-in post-denoise on) |
+| `--post-denoise` | 0.8 | blend amount for that post-denoise |
+| `--adaptive` | 0.02 | adaptive sampling threshold (lower = cleaner, slower) |
+| `--gpu` | false | use OptiX if a GPU is really available |
 
----
+It writes `renders/01-hero-three-quarter.png` … `06-detail.png`, plus the optional 07/08 passes, and
+then prints **two checks you must read**:
+
+```
+[rig] framing check (target margin 10% on every side)
+  02-front                 L 28.9% R 28.9% T 10.0% B 10.0%  ok
+  05-top                   L  0.0% R  0.0% T  0.0% B  0.0%  CLIPPED   <- fix before pushing
+[rig] output sanity check
+  03-side.png   mean 0.216 std 0.191   ok        <- BLACK / FLAT-EMPTY / BLOWN HIGHLIGHTS flag artefacts
+```
+
+**Memory note:** on machines with < 3 GB RAM, OpenImageDenoise gets OOM-killed at ≥ 1400 px and the
+render silently produces no file. The rig detects available RAM, turns OIDN off and post-denoises
+instead (`--no-denoise` forces this). If `blender` exits 137, that was the cause — batch views with
+`--views` and keep `--no-denoise`.
+
+The framing check projects the asset's bounding-box corners into each camera with
+`world_to_camera_view`, so it is exact — it cannot be fooled by the floor or the backdrop. If a view
+reports `CLIPPED`, raise `--margin` or check that the asset is centred on its origin.
+
+### Why the rig avoids two classic traps
+
+1. **`Camera.angle` is in radians, not degrees.** The common
+   `dist = max_dim * 1.15 / tan(radians(camera.angle / 2))` formula converts twice and puts the
+   camera ~60× too far away — the "model looks like a distant speck" render. Always use the returned
+   value directly (`camera.angle * 0.5`) or solve from the bounding box as the rig does.
+2. **Compute the bounds before you add studio geometry.** Build the floor/lights *after* reading the
+   asset bounds (and exclude rig objects by name) or the camera framing will include the backdrop.
+
+### If you write your own rig
+
+It must produce the same six views, the same margin, and its own framing/sanity checks. The output is
+what is judged — but a rig that silently renders the floor instead of the model is worse than no rig,
+so verify by opening the first image before you render the other five.
+
+### Optional passes
+
+- **Wireframe:** `render_rig.py` duplicates the meshes, applies a Wireframe modifier (real geometry,
+  not a shader node — the shader `Wireframe` node is silently filtered out under Cycles + denoise) and
+  renders dark faces with emissive edges.
+- **Scale reference:** a 1 m grid is laid on the floor so a viewer can read the true size; it is
+  removed immediately afterwards.
+- **Emissive assets:** run a second pass with emission strength reduced so the geometry stays readable
+  (see `docs/RENDER_SPEC.md` §4).
 
 ## 5. Export the shippable `.glb`
 

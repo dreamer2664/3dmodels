@@ -90,6 +90,12 @@ FORBIDDEN_DIRS = {"__pycache__", "node_modules", ".ipynb_checkpoints", "rejected
 PLACEHOLDER_RE = re.compile(
     r"(?<![\w<])(TODO|TBD|FIXME|XXX|Lorem ipsum|PLACEHOLDER)(?![\w>])", re.IGNORECASE
 )
+# phrases that indicate an unfinished / abandoned package
+UNFINISHED_RE = re.compile(
+    r"(coming soon|to be added|will be added|next session|next run|work in progress"
+    r"|\bWIP\b|placeholder render|not yet (modelled|rendered|written)|more renders later)",
+    re.IGNORECASE,
+)
 ANGLE_PLACEHOLDER_RE = re.compile(r"<[A-Za-z][^<>\n]{0,60}>")
 
 
@@ -311,6 +317,13 @@ def validate_package(pkg_dir: Path, res: Result, min_res: int) -> None:
                             + ", ".join(sorted(extra_in_zip)[:5])
                         )
                 kind = "nested" if any("/" in n for n in imgs) else "flat"
+                if images:
+                    newest = max(p.stat().st_mtime for p in images)
+                    if zip_path.stat().st_mtime + 1 < newest:
+                        res.err(
+                            "renders.zip is older than the newest file in renders/ — "
+                            "you edited renders but did not rebuild the archive"
+                        )
                 res.note(f"renders.zip: {len(imgs)} image(s), {size} MB, {kind} archive")
         except zipfile.BadZipFile:
             res.err("renders.zip is not a valid zip archive")
@@ -329,6 +342,13 @@ def validate_package(pkg_dir: Path, res: Result, min_res: int) -> None:
             status = fm.get("status", "").strip().strip("'\"")
             if status and status not in {"draft", "in-review", "released", "deprecated"}:
                 res.warn(f"front-matter status '{status}' is not one of draft|in-review|released|deprecated")
+            if status == "draft":
+                res.err(
+                    "front-matter status is 'draft' — a pushed package must be 'released'. "
+                    "Do not push half-finished packages (docs/NO_STOPPING.md)."
+                )
+            if status == "deprecated":
+                res.warn("front-matter status is 'deprecated'")
 
         low = text.lower()
         missing_sections = [s for s in REQUIRED_SECTIONS if s not in low]
@@ -338,6 +358,13 @@ def validate_package(pkg_dir: Path, res: Result, min_res: int) -> None:
         hits = PLACEHOLDER_RE.findall(text)
         if hits:
             res.err("README.md still contains placeholder markers: " + ", ".join(sorted(set(hits))))
+        unfinished = UNFINISHED_RE.findall(text)
+        if unfinished:
+            res.err(
+                "README.md contains language that indicates an unfinished package: "
+                + ", ".join(sorted({(u[0] if isinstance(u, tuple) else u).lower() for u in unfinished}))
+                + ". Finish it (docs/NO_STOPPING.md)."
+            )
         angles = ANGLE_PLACEHOLDER_RE.findall(text)
         if angles:
             res.err(
