@@ -76,14 +76,13 @@ PY
 - Format: `agent_` + lowercase letters/digits/underscore. e.g. `agent_atlas`, `agent_heron_02`.
 - Never reuse or take over an existing workspace folder. If unsure it's free, check the repo.
 
-### 2.2 Get your assignment (brief queue — do not invent a subject)
+### 2.2 Get your assignment (do not invent a subject)
 ```bash
-python tools/claim_brief.py --next --agent <your-slug>
+python tools/wanted.py --next --agent <your-slug>
 ```
-This claims the lowest-numbered open brief, locks it to you, creates `agent_<slug>/<package>/` and
-copies in the README template. Build exactly what it describes. Full mechanics:
-[`BRIEFS.md`](./BRIEFS.md). If your prompt names a specific asset ("brief #0"), skip this and record
-`brief_source: prompt` in the README front-matter.
+This takes the next line of [`WANTED.md`](./WANTED.md), marks it as yours, creates
+`agent_<slug>/<package>/` and copies in the README template. Build exactly that item. If your prompt
+names a specific asset, skip this and record `brief_source: prompt` in the README front-matter.
 
 If you *must* invent one (no brief exists and none is coming), the old bar still applies — pick
 something **specific and referenceable** and write it in `ROADMAP.md` before modelling.
@@ -156,10 +155,10 @@ It checks layout, naming, render count/dimensions, zip integrity, README complet
 file-size limits, and forbidden files. **Exit 0 is required.** If you believe a check is wrong, open
 an issue against `tools/` — do not bypass it by editing the checker in your PR.
 
-### 2.10 Deliver the brief
+### 2.10 Close the WANTED.md line
 ```bash
-python tools/claim_brief.py --deliver <brief-id> --agent <your-slug>
-git add BRIEFS agent_<slug> && git commit -m "feat(<package>): deliver brief <brief-id>"
+python tools/wanted.py --done <number> --package agent_<slug>/<package>
+git add WANTED.md agent_<slug> && git commit -m "feat(<package>): done"
 ```
 
 ### 2.11 Commit and open a PR
@@ -177,7 +176,7 @@ git push -u origin agent_<slug>/<package>
 - `chore(<workspace>):` roadmap, tooling notes, housekeeping
 
 **PR title:** `feat(<package>): <Asset Name>`
-**PR body must include:** package path, **brief id + title**, category, triangle count, render count,
+**PR body must include:** package path, **the WANTED.md line you built**, category, triangle count, render count,
 preflight output, and an honest note about anything you could not meet.
 
 ---

@@ -21,15 +21,13 @@ this list. Unchecked boxes mean the package is not done; dishonest ticks mean it
 - [ ] `render_rig.py` framing check pasted into the run log / PR and all views `ok`.
 - [ ] Output sanity check showed `ok` for every image (no BLACK / FLAT-EMPTY / BLOWN HIGHLIGHTS).
 
-## A3. Brief compliance
+## A3. Wanted-line compliance
 
-- [ ] A brief was claimed (`BRIEFS/CLAIMED/` or `BRIEFS/DELIVERED/` contains it) and the README
-      front-matter records `brief` and `brief_source`.
-- [ ] The model matches the brief's `slug`, `title`, `category` and `dimensions_m` (±10 %).
-- [ ] Every item in the brief's `must_have` list is present **and visible in at least one render**.
-- [ ] Nothing from the brief's `avoid` list is present.
-- [ ] Triangle count is inside the brief's `tri_budget`.
-- [ ] The brief was moved to `BRIEFS/DELIVERED/` and committed with the package.
+- [ ] A line was taken from `WANTED.md` (`python tools/wanted.py --next`) and the README front-matter
+      records `brief` / `brief_source`.
+- [ ] The model is recognisably the thing that line describes — not a neighbouring object.
+- [ ] Real-world size and proportions are believable for that object.
+- [ ] The line is marked `[x]` under "Done" with the folder it produced, and committed.
 
 ## B. Model
 

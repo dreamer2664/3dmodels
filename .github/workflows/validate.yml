@@ -132,14 +132,14 @@ jobs:
           echo "$CHANGED"
           # allowed in an agent PR: its workspace, the brief it claims/delivers, the generated index
           BAD=$(printf '%s\n' "$CHANGED" \
-            | grep -vE '^(agent_[A-Za-z0-9_]+/|BRIEFS/(CLAIMED|DELIVERED)/|README\.md$)' \
+            | grep -vE '^(agent_[A-Za-z0-9_]+/|WANTED\.md$|README\.md$)' \
             | grep -vE '^$' || true)
           if [ -n "$BAD" ]; then
             echo "::error::This PR modifies files outside agent_*/ workspaces:"
             echo "$BAD"
-            echo "Shared files (AGENTS.md, STANDARDS.md, docs/, tools/, templates/, .github/, BRIEFS/OPEN/)"
-            echo "may only be changed by the repo maintainer in a dedicated PR. Agents may add their own"
-            echo "BRIEFS/CLAIMED/ and BRIEFS/DELIVERED/ moves. See AGENTS.md §0 rule 9 and BRIEFS.md."
+            echo "Shared files (AGENTS.md, STANDARDS.md, docs/, tools/, templates/, .github/) may only be"
+            echo "changed by the repo maintainer in a dedicated PR. Agents may update their own WANTED.md"
+            echo "lines. See AGENTS.md §0 rule 9."
             exit 1
           fi
           echo "OK — changes are confined to agent workspaces."

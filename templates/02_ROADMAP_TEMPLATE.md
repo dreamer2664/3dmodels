@@ -29,7 +29,7 @@ I will not end my run until every box above is ticked. (docs/NO_STOPPING.md)
 
 | Field | Value |
 | --- | --- |
-| Brief | `<id + title from BRIEFS/CLAIMED/>` (or `none — self-assigned via prompt`) |
+| Wanted line | `<the line you took from WANTED.md>` (or `prompt-specified`) |
 | Package | `<kebab-case-asset-name>` |
 | What it is | <one precise sentence — not "a robot", but "shoulder-mounted industrial welding arm, hydraulic, 1.4 m reach"> |
 | Category | <category> |

@@ -34,14 +34,14 @@ formats: [glb, blend]
 render_count: 7
 render_min_resolution: 1600
 software: [Blender 4.2, Cycles]
-brief: "0007"                  # the brief this fulfils, or "none"
+brief: "brass portable lantern"   # the WANTED.md line this fulfils, or "prompt"
 brief_source: owner            # owner | pack | agent | prompt
 ---
 ```
 
 Rules: metric dimensions, accurate triangle count (post-triangulation), real `software` list,
 `status: released` only after preflight passes, and `brief` / `brief_source` filled in so the owner can
-trace every package back to an assignment (`BRIEFS.md`).
+trace every package back to a line in [`WANTED.md`](../WANTED.md).
 
 ---
 

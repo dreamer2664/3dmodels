@@ -5,8 +5,8 @@
 
 ## Package
 
-- **Brief:** `<id — title>` (from `BRIEFS/CLAIMED/`), or `brief #0 (prompt-specified)`
-- **Brief moved to DELIVERED:** yes / no (`tools/claim_brief.py --deliver <id>`)
+- **WANTED.md line:** `<the line you built>`, or `prompt-specified`
+- **Line marked done:** yes / no (`tools/wanted.py --done <n>`)
 - **Workspace:** `agent_<slug>`
 - **Package path:** `agent_<slug>/<package>`
 - **Asset:** <what it is, one sentence>
@@ -40,9 +40,9 @@
 - [ ] `.glb` re-imported and verified against the renders
 - [ ] README complete, no placeholders, limitations stated honestly
 - [ ] `tools/preflight.py` exits 0
-- [ ] Nothing outside my workspace modified (plus my own BRIEFS/CLAIMED + DELIVERED moves)
-- [ ] Every `must_have` item in the brief is present and visible in a render; nothing from `avoid`
-- [ ] Brief moved to BRIEFS/DELIVERED and committed
+- [ ] Nothing outside my workspace modified (plus my own WANTED.md line)
+- [ ] The model is recognisably the thing the wanted line describes
+- [ ] Wanted line marked done and committed
 - [ ] No TODOs, "coming soon", "next session", draft status or other unfinished markers
 - [ ] `renders.zip` rebuilt after the last render change (preflight checks its timestamp)
 - [ ] The five self-audit questions in docs/NO_STOPPING.md §6 answered in the PR body

@@ -139,34 +139,28 @@ a trail of `_v2`, `_final`, `_FINAL_ok` files.
 
 Each step has a gate. Do not skip ahead — later steps assume earlier ones passed.
 
-### Step 1 — Take your assignment (do not invent a subject)
-The repo owner assigns work through a brief queue. **You do not choose what to make** unless you are
-told to.
+### Step 1 — Take your assignment from `WANTED.md`
+The owner lists what they want in [`WANTED.md`](./WANTED.md) — one plain line per model. **You do not
+choose your own subject.** Take the next one:
 
 ```bash
-python tools/claim_brief.py --next --agent <your-slug>     # assigns you the next brief
+python tools/wanted.py --next --agent <your-slug>
 ```
 
-That command moves a brief from `BRIEFS/OPEN/` to `BRIEFS/CLAIMED/`, writes a lock file (so no other
-agent can take the same brief), creates `agent_<slug>/<package>/` with `model/` and `renders/`, and
-copies the README template in. Full mechanics: [`BRIEFS.md`](./BRIEFS.md).
+That marks the line `[~] taken by agent_<slug>`, creates `agent_<slug>/<package>/` with `model/` and
+`renders/`, and copies the README template in. Build what the line says; if it only says
+"cast iron skillet", build the plainest, most recognisable version at a believable real-world size.
 
-**Build exactly what the brief says.** Match its `slug`, `title`, `dimensions_m`, `must_have` and
-`avoid`. If your prompt names an asset explicitly, that overrides the queue ("brief #0") — record
-`brief_source: prompt` in the package README front-matter.
+If your prompt names an asset explicitly, that wins ("brief #0") — record
+`brief_source: prompt` in the package README front-matter and skip the list.
 
-If there is no brief and none arrives, in this order: (1) ask for one in your PR/issue and stop
-cleanly, (2) generate one from a pack (`python tools/brief_from_pack.py packs/basic-props.pack --count 1`),
-(3) write your own with `python tools/claim_brief.py --new "<Asset Title>" --agent <slug>` and then
-**fill in every field** — a vague brief produces a vague model.
+If the list is empty, say so in your PR/issue; do not invent ten models. One good one is the job.
 
-- Pick a slug for yourself (e.g. `agent_atlas`). If the workspace folder exists and is not yours, pick
-  another slug. You never take over an existing workspace.
-- `ROADMAP.md` is created for you; add the brief's id/slug to the "Current package" table and note the
-  references you will consult.
+- Pick a slug for yourself (e.g. `agent_atlas`). Never take over an existing workspace.
+- `ROADMAP.md` is created for you; add the line you took and the references you will consult.
 
-**Gate 1:** a brief is claimed (it is in `BRIEFS/CLAIMED/` with your lock file), the package folder
-exists, and ROADMAP.md names the brief and its references.
+**Gate 1:** the line in `WANTED.md` shows your agent name, the package folder exists, and ROADMAP.md
+names the asset and its references.
 
 ### Step 2 — Reference and blockout
 - Gather references **for your own eyes** only (do not commit copyrighted images unless they are
@@ -256,16 +250,17 @@ git push -u origin agent_<slug>/<package>
 - Never commit: `.blend1` backups, `__pycache__`, `*.tmp`, renders you rejected, huge `.exr`
   intermediates, or your local token/`.env`.
 
-### Step 10b — Deliver the brief
+### Step 10b — Close the line
 ```bash
-python tools/claim_brief.py --deliver <brief-id> --agent <your-slug>
-git add BRIEFS agent_<slug> && git commit -m "feat(<package>): deliver brief <brief-id>"
+python tools/wanted.py --done <item-number> --package agent_<slug>/<package>
+git add WANTED.md agent_<slug> && git commit -m "feat(<package>): done"
 ```
-The brief moves to `BRIEFS/DELIVERED/` with the package path and render count recorded. That is the
-owner's audit trail — without it they cannot tell whether you built what they asked for.
+`--done` moves the line under "Done" in `WANTED.md` with the folder it produced, so the owner can see
+at a glance that the thing they asked for exists. If you cannot build it, `--release <n> --note "why"`
+instead and say so in the PR.
 
-**Gate 10:** PR open, CI green, PR description references the package path and brief id, brief moved
-to `BRIEFS/DELIVERED/` and committed.
+**Gate 10:** PR open, CI green, PR references the package path and the `WANTED.md` line, and the line
+is updated and committed.
 
 ---
 
