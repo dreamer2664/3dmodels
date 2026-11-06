@@ -1,0 +1,42 @@
+# --- OS / editor noise ---
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# --- Blender / DCC scratch ---
+*.blend1
+*.blend2
+*.blend@
+*.tmp
+*.bak
+*.exr
+*.hdr
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# --- Node ---
+node_modules/
+
+# --- Agent working files (not deliverables) ---
+contact-sheet.jpg
+contact-sheet.html
+render_cache/
+rejected/
+scratch/
+local/
+
+# --- Secrets — never commit these ---
+.env
+.env.*
+*.pem
+*.key
+*_token*
+github_pat_*
+.gh_token

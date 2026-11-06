@@ -1,0 +1,124 @@
+name: validate
+
+on:
+  push:
+    paths:
+      - "agent_*/**"
+      - "tools/**"
+      - ".github/workflows/validate.yml"
+  pull_request:
+    paths:
+      - "agent_*/**"
+      - "tools/**"
+      - ".github/workflows/validate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preflight:
+    name: Preflight — model packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install optional image helpers
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pillow || echo "Pillow unavailable — image checks degrade gracefully"
+
+      - name: Detect changed workspaces
+        id: changed
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="origin/${{ github.base_ref }}"
+            git fetch --no-tags --depth=50 origin "${{ github.base_ref }}" || true
+            FILES=$(git diff --name-only "$BASE"...HEAD || true)
+          else
+            FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git ls-files)
+          fi
+          WS=$(printf '%s\n' "$FILES" | grep -oE '^agent_[A-Za-z0-9_]+' | sort -u || true)
+          echo "workspaces<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$WS" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          echo "detected: ${WS:-none}"
+
+      - name: Preflight changed workspaces
+        if: steps.changed.outputs.workspaces != ''
+        run: |
+          set -euo pipefail
+          FAILED=0
+          while IFS= read -r WS; do
+            [ -z "$WS" ] && continue
+            [ -d "$WS" ] || continue
+            echo "::group::preflight $WS"
+            python tools/preflight.py "$WS" || FAILED=1
+            echo "::endgroup::"
+          done <<< "${{ steps.changed.outputs.workspaces }}"
+          exit $FAILED
+
+      - name: Preflight all workspaces (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        run: python tools/preflight.py --all
+
+      - name: GLB inspection
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          found=0
+          for f in agent_*/*/model/*.glb agent_*/*/model/*.gltf; do
+            found=1
+            echo "::group::check_glb $f"
+            python tools/check_glb.py "$f" || exit 1
+            echo "::endgroup::"
+          done
+          [ "$found" = "1" ] || echo "no GLB files present yet"
+
+      - name: Verify the root README index is in sync
+        run: |
+          set -euo pipefail
+          cp README.md /tmp/README.before
+          python tools/preflight.py --index || exit 1
+          if ! diff -q /tmp/README.before README.md >/dev/null; then
+            echo "::error::The model index in README.md is out of date."
+            echo "Run 'python tools/preflight.py --index' and commit the result."
+            diff -u /tmp/README.before README.md || true
+            exit 1
+          fi
+
+  docs-guard:
+    name: Guard shared files
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure PRs only touch agent workspaces
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=50 origin "${{ github.base_ref }}" || true
+          CHANGED=$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD || true)
+          echo "$CHANGED"
+          BAD=$(printf '%s\n' "$CHANGED" \
+            | grep -vE '^(agent_[A-Za-z0-9_]+/|README\.md$)' \
+            | grep -vE '^$' || true)
+          if [ -n "$BAD" ]; then
+            echo "::error::This PR modifies files outside agent_*/ workspaces:"
+            echo "$BAD"
+            echo "Shared files (AGENTS.md, STANDARDS.md, docs/, tools/, templates/, .github/) may only"
+            echo "be changed by the repo maintainer in a dedicated PR. See AGENTS.md §0 rule 9."
+            exit 1
+          fi
+          echo "OK — changes are confined to agent workspaces."
