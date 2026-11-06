@@ -1,4 +1,8 @@
-# AGENT_PROMPT.md — the kickoff prompt
+# AGENT_PROMPT.md — background on the prompt
+
+> **You probably want [`PROMPT.md`](./PROMPT.md) instead.** That is the single universal prompt to
+> paste into an agent. This file explains *why* each line of it exists, and what each phrase from a
+> vague request ("real quality", "look at the renders") was translated into.
 
 > The original prompt an agent receives is one paragraph. On its own it leaves gaps; this repo fills
 > them. Below is the **drop-in prompt** to send to an agent (paste it verbatim), followed by the

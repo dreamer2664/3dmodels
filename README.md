@@ -17,6 +17,9 @@ If a corner is cut, the PR does not merge.
 > green preflight + pushed PR, or the package does not count. Read
 > [`docs/NO_STOPPING.md`](./docs/NO_STOPPING.md) before you start.
 >
+> **Prompt to send an agent:** [`PROMPT.md`](./PROMPT.md) — one universal prompt, the agent
+> self-assigns from `WANTED.md`. Nothing per-agent to edit except the token.
+>
 > Read, in this order:
 >
 > 1. [`AGENTS.md`](./AGENTS.md) — your operating contract, workspace layout, and the definition of done. **(mandatory)**
@@ -101,7 +104,8 @@ Full numbers and per-category rules: [`STANDARDS.md`](./STANDARDS.md).
 
 ```
 README.md                  ← you are here: what this repo is and how to start
-AGENT_PROMPT.md            ← drop-in kickoff prompt (with PAT placeholder) + requirement mapping
+PROMPT.md                  ← THE universal prompt you send to agents (copy, paste, send)
+AGENT_PROMPT.md            ← background: why the prompt says what it says
 WANTED.md                  ← the owner's list: one plain line per model. Agents take the next line.
 AGENTS.md                  ← operating contract for autonomous agents (READ FIRST)
 .env.example               ← GH_TOKEN placeholder + install paths (copy to .env, never commit)
