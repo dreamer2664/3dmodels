@@ -19,9 +19,11 @@ becomes `[x]` and moves under **Done** with the folder it created.
 
 ## To build
 
-- [ ] brass portable lantern, about 30 cm tall
+- [ ] wooden bench, iron armrests, very realistic.
 - [ ] cast iron skillet, worn seasoning
-
+- [ ] iphone, realistic, life sized
+- [ ] person, hyper realistic. male, 30 years old, caucasian.
 ## Done
 
-<!-- Finished models move here automatically. Leave this heading alone. -->
+<!-- Finished models move here automatically. Leave this heading alone.
+-->
